@@ -1,0 +1,22 @@
+[project]
+name = "noc-incident-triage"
+version = "0.1.0"
+description = "Multi-agent NOC incident triage (A2A pattern) — Lumen Gen-AI assessment, Scenario 2"
+requires-python = ">=3.11"
+dependencies = [
+    "langgraph>=0.2.45",
+]
+
+[project.optional-dependencies]
+# Real LLM provider — optional. The project runs fully on the deterministic
+# mock provider with NO key and NO network. Install this extra only to use OpenAI.
+openai = ["openai>=1.54"]
+# Dev/test tooling.
+dev = ["pytest>=8.3", "pytest-asyncio>=0.24"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
