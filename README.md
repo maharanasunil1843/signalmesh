@@ -12,13 +12,19 @@ A two-agent system that turns raw network telemetry into a professional incident
 
 ```mermaid
 flowchart TD
-    A[Telemetry Tool<br/>fetch_network_errors] -->|raw JSON| B[Analyst Agent]
-    B -->|AnalystFinding<br/>typed + validated| R{Route on<br/>LLM output}
+    A[Telemetry Tool: fetch_network_errors] -->|raw JSON| B[Analyst Agent]
+
+    B -->|validated AnalystFinding| R{Route on LLM output}
+
     R -->|finding ok| C[Reporter Agent]
-    R -->|low confidence / no finding<br/>retry budget left| B
-    R -->|no finding<br/>budget exhausted| F[Fail-Safe Node]
+
+    R -->|low confidence or no finding| B
+
+    R -->|retry exhausted| F[Fail-Safe Node]
+
     C -->|incident report| OUT[Final Report + Trace]
-    F -->|honest 'unresolved' report| OUT
+
+    F -->|honest unresolved report| OUT
 
     subgraph Boundary [Enforced agent boundary]
         B
