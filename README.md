@@ -43,27 +43,70 @@ flowchart TD
 
 ## Quickstart
 
+### 1. Install dependencies
+
 ```bash
-# 1. environment (uv)
 uv venv --python 3.11
 source .venv/bin/activate
-uv sync                 # core; add --extra dev for tests, --extra openai for a real LLM
-
-# 2. run one triage (mock provider, no key, deterministic)
-python main.py --scenario incident-42
-
-# 3. report only (trace goes to stderr)
-python main.py --scenario incident-42 2>/dev/null
-
-# 4. the task-success metric
-python main.py --metric
-
-# 5. tests
-pytest -q
+uv sync --extra dev          # offline use: mock provider + tests
+uv sync --extra dev --extra openai  # add this if you want to run with a real OpenAI model
 ```
 
-To use a real model instead of the mock: copy `.env.example` to `.env`, set
-`LLM_PROVIDER=openai` and `OPENAI_API_KEY`. No code changes.
+### 2. Run with the mock provider (no API key needed)
+
+The mock is deterministic and rule-based — same input always yields the same output.
+
+```bash
+# Normal incident — analyst identifies router, reporter formats the report
+python main.py --scenario incident-42
+
+# See only the report (trace goes to stderr)
+python main.py --scenario incident-42 2>/dev/null
+
+# Failure path — empty telemetry, system declines safely without fabricating a router
+python main.py --scenario empty
+
+# Failure path — malformed telemetry (missing router id), same safe decline
+python main.py --scenario malformed
+
+# Task-success metric: scores all 5 scenarios, prints PASS/FAIL per case
+python main.py --metric
+```
+
+### 3. Run with a real OpenAI model
+
+```bash
+# Copy the example and fill in your key
+cp .env.example .env
+# Edit .env: set LLM_PROVIDER=openai, OPENAI_API_KEY=sk-..., OPENAI_MODEL=gpt-4o-mini
+
+# Load the env and run — no code changes required
+set -a && source .env && set +a
+python main.py --scenario incident-42
+```
+
+The LLM now reads the actual telemetry numbers and reasons over them. Expect ~5–15 seconds
+per run (two API calls: one for the Analyst, one for the Reporter).
+
+### 4. Run the test suite
+
+```bash
+# Offline — 13 tests, no key needed, completes in ~2 seconds
+python -m pytest -v
+
+# With OpenAI active — 16 tests (3 integration tests run, rest unchanged)
+set -a && source .env && set +a
+python -m pytest -v
+
+# Run only the OpenAI integration tests
+python -m pytest -v tests/test_provider_integration.py
+
+# Run only the offline tests (mock + fault injection + contract)
+python -m pytest -v tests/test_resilience.py tests/test_success_metric.py
+```
+
+The 3 OpenAI integration tests auto-skip when `LLM_PROVIDER` is not set to `openai`,
+so `python -m pytest -v` is always safe to run without a key.
 
 ## Design Decisions & Trade-offs
 
