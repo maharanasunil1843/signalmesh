@@ -23,11 +23,10 @@ Note the scoring design: for normal scenarios, success = the Analyst's router id
 
 ## Test Suite
 
-`pytest -q` — **13 passed**. Includes:
+`pytest -q` — **16 tests total**.
 
-- Success-metric determinism and per-case structure.
-- Handoff-contract rejection of malformed / out-of-range findings.
-- **Fault injection:** total model failure → safe degrade; empty / malformed telemetry → fail-safe with no fabricated router; bounded-retry cap honored; timeout guard fires; `ProviderError` normalization.
+- **13 run offline** (no API key required): success-metric determinism and per-case structure; handoff-contract rejection of malformed / out-of-range findings; fault injection (total model failure → safe degrade; empty / malformed telemetry → fail-safe with no fabricated router; bounded-retry cap honored; timeout guard fires; `ProviderError` normalization).
+- **3 OpenAI integration tests** (`tests/test_provider_integration.py`): verify the live provider actually reaches the API, that an end-to-end triage with OpenAI produces non-mock output, and that a bad key raises `ProviderError`. These auto-skip when `LLM_PROVIDER` is not set to `openai`.
 
 ## The "Fail-Fast" Mindset — How This Design Satisfies It
 

@@ -114,14 +114,14 @@ src/graph.py                LangGraph wiring + the one bounded conditional
 src/resilience.py           bounded retry / timeout / None-guard primitives
 src/success_metric.py       the task-success metric (scored, deterministic)
 src/observability.py        structured JSON decision trace
-tests/                      success-metric tests + fault-injection tests
+tests/                      success-metric, fault-injection, and OpenAI provider integration tests
 docs/EVALUATION_LOG.md      metric result + fail-fast rationale
 ```
 
 ## Evaluation
 
 See [`docs/EVALUATION_LOG.md`](docs/EVALUATION_LOG.md). Summary: the task-success
-metric scores **5/5** deterministically — three normal cases carry the Analyst's router id through to the report; two failure cases (empty / malformed telemetry) correctly decline without fabricating a router. `pytest -q` runs 13 tests including system-level fault injection (total model failure, empty/malformed telemetry, retry-bound, timeout).
+metric scores **5/5** deterministically — three normal cases carry the Analyst's router id through to the report; two failure cases (empty / malformed telemetry) correctly decline without fabricating a router. `pytest -q` runs 16 tests: 13 run offline with no key (success-metric, contract validation, fault injection); 3 are OpenAI integration tests that auto-skip unless `LLM_PROVIDER=openai` is set.
 
 ## Data
 
